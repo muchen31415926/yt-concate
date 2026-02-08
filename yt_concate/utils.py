@@ -1,5 +1,4 @@
 import os
-from operator import and_
 
 from yt_concate.settings import DOWNLOADS_DIR
 from yt_concate.settings import CAPTIONS_DIR
@@ -21,13 +20,15 @@ class Utils:
         return os.path.join(DOWNLOADS_DIR, channel_id + '.txt')
 
     def video_list_file_exists(self, channel_id):
-        path =  self.get_video_list_filepath(channel_id)
+        path = self.get_video_list_filepath(channel_id)
         return os.path.exists(path) and os.path.getsize(path) > 0
 
     @staticmethod
-    def get_caption_filepath(video_id):
-        return os.path.join(CAPTIONS_DIR, video_id + '.txt')
+    def caption_file_exists(yt):
+        path = yt.get_caption_filepath()
+        return os.path.exists(path) and os.path.getsize(path) > 0
 
-    def caption_file_exists(self, video_id):
-        path = self.get_caption_filepath(video_id)
+    @staticmethod
+    def video_file_exists(yt):
+        path = yt.get_video_filepath()
         return os.path.exists(path) and os.path.getsize(path) > 0

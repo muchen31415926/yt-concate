@@ -1,10 +1,7 @@
 import time
 
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.formatters import SRTFormatter
-from youtube_transcript_api._errors import TranscriptsDisabled
-from youtube_transcript_api._errors import NoTranscriptFound
-
+from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
 
 from .step import Step
 from .step import StepException
@@ -13,32 +10,54 @@ from .step import StepException
 class DownloadCaptions(Step):
     def process(self, data, inputs, utils):
         start = time.time()
-        for url in data:
-            print('downloading captions for ' + url)
-            video_id = url.split("v=")[-1].split("&")[0]
+        for yt in data:
+            print('downloading captions for ' + yt.id)
 
-            if utils.caption_file_exists(video_id):
+            if utils.caption_file_exists(yt):
                 print('found existing caption file')
                 continue
             # 取得英文字幕（自動或人工都會抓）
+            url = yt.url
+            opts = {
+                "outtmpl": yt.caption_filepath.split(".en.srt")[0],
+                "skip_download": True,
+                "writesubtitles": True,
+                "writeautomaticsub": True,
+                "subtitleslangs": ["en"],
+                "subtitlesformat": "srt",
+
+                "sleep_interval": 4,
+                "max_sleep_interval": 8,
+                "retries": 5,
+            }
+
             try:
-                transcript = YouTubeTranscriptApi().fetch(video_id, languages=['en'])
+                with YoutubeDL(opts) as ydl:
+                    ydl.download([url])
 
-            except TranscriptsDisabled:
-                print('captions : disabled, skip video' + video_id)
-                continue
+            except DownloadError as e:
+                msg = str(e).lower()
 
-            except NoTranscriptFound:
-                print('captions : not found, skip video' + video_id)
-                continue
+                if "subtitle" in msg or "caption" in msg:
+                    print('captions : not found, skip video' + yt.id)
+                    continue
 
-            # 轉成 SRT 格式和存檔
-            formatter = SRTFormatter()
-            srt_text = formatter.format_transcript(transcript)
-            print(srt_text)
+                elif "429" in msg or "too many requests" in msg:
+                    print("rate limited, sleeping")
+                    raise
 
-            with open(utils.get_caption_filepath(video_id), "w", encoding="utf-8") as f:
-                f.write(srt_text)
+                elif "not available" in msg:
+                    print('video not available, skip video' + yt.id)
+                    continue
+
+                elif "private" in msg:
+                    print('private video, skip video' + yt.id)
+                    continue
+
+                else:
+                    raise
 
         end = time.time()
         print(f"took {end - start} seconds")
+
+        return data
