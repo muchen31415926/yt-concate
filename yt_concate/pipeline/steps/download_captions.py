@@ -12,7 +12,6 @@ class DownloadCaptions(Step):
         start = time.time()
         for yt in data:
             print('downloading captions for ' + yt.id)
-
             if utils.caption_file_exists(yt):
                 print('found existing caption file')
                 continue
