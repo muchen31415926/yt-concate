@@ -11,12 +11,12 @@ from yt_concate.pipeline.steps.step import StepException
 from yt_concate.pipeline.pipeline import PipeLine
 from yt_concate.utils import Utils
 
-CHANNEL_ID = 'UCtI0Hodo5o5dUb67FeUjDeA'
+CHANNEL_ID = 'UCRa323qW1-btI2PCU_U7upQ'
 
 def main():
     inputs = {
         'channel_id': CHANNEL_ID,
-        'search_word': 'launch',
+        'search_word': 'Prime',
         'download_video_limit': 80,
         'concat_videos_limit': 40,
     }
