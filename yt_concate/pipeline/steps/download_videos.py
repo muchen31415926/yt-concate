@@ -1,3 +1,5 @@
+import logging
+
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 
@@ -5,11 +7,13 @@ from yt_dlp import YoutubeDL
 
 from .step import Step
 
+logger = logging.getLogger(__name__)
+
 
 class DownloadVideos(Step):
     def process(self, data, inputs, utils):
         yt_list = self.filter_duplicate_videos(data)
-        print('need to download video:', len(yt_list))
+        logger.info('need to download video:', len(yt_list))
 
         self.download_until_limit(yt_list, inputs, utils)
 
@@ -20,7 +24,7 @@ class DownloadVideos(Step):
         success_count = 0
         max_workers = 3
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            limit = inputs['download_video_limit']
+            limit = inputs['download_videos_limit']
             futures = self.submit_initial_tasks(executor, yt_iter, utils, max_workers)
             while futures:
                 future = next(as_completed(futures))
@@ -30,7 +34,7 @@ class DownloadVideos(Step):
                     if future.result():
                         success_count += 1
                 except Exception as e:
-                    print(e)
+                    logger.warning(e)
 
                 if success_count >= limit:
                     break
@@ -53,7 +57,7 @@ class DownloadVideos(Step):
 
     def download_video(self, yt, utils):
         if utils.video_file_exists(yt):
-            print(f'found existing video file for {yt.url}, skipping')
+            logger.debug(f'found existing video file for {yt.url}, skipping')
             return True
 
         self.do_download(yt)
@@ -66,7 +70,7 @@ class DownloadVideos(Step):
     @staticmethod
     def do_download(yt):
         url = yt.url
-        print('downloading' + url)
+        logger.debug('downloading' + url)
 
         opts = {
             "format": "mp4",

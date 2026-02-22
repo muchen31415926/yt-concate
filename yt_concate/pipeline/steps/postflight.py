@@ -1,5 +1,10 @@
+import logging
+
 from .step import Step
+
+logger = logging.getLogger(__name__)
+
 
 class Postflight(Step):
     def process(self, data, inputs, utils):
-        print('in postflight')
+        logger.info('in postflight')

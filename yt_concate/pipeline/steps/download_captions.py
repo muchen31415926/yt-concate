@@ -1,11 +1,14 @@
 import time
 import concurrent.futures
+import logging
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
 from .step import Step
 from .step import StepException
+
+logger = logging.getLogger(__name__)
 
 
 class DownloadCaptions(Step):
@@ -22,20 +25,20 @@ class DownloadCaptions(Step):
                 future.result()
 
         end = time.time()
-        print(f"took {end - start} seconds")
+        logger.info(f"took {end - start} seconds")
 
         return data
 
     def download_caption(self, yt, utils):
         if self.caption_exists(yt, utils):
-            print('found existing caption file')
+            logger.debug('found existing caption file')
             return
 
         self.do_download(yt)
 
     @staticmethod
     def do_download(yt):
-        print('downloading captions for ' + yt.id)
+        logger.debug('downloading captions for ' + yt.id)
         url = yt.url
         opts = {
             "outtmpl": yt.caption_filepath.split(".en.srt")[0],
@@ -58,19 +61,19 @@ class DownloadCaptions(Step):
             msg = str(e).lower()
 
             if "subtitle" in msg or "caption" in msg:
-                print('captions : not found, skip captions' + yt.id)
+                logger.warning('captions : not found, skip captions' + yt.id)
                 return
 
             elif "429" in msg or "too many requests" in msg:
-                print("rate limited, sleeping")
+                logger.warning("rate limited, sleeping")
                 raise
 
             elif "not available" in msg:
-                print('video not available, skip subtitle' + yt.id)
+                logger.warning('video not available, skip subtitle' + yt.id)
                 return
 
             elif "private" in msg:
-                print('private video, skip subtitle' + yt.id)
+                logger.warning('private video, skip subtitle' + yt.id)
                 return
 
             else:

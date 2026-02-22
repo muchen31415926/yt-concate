@@ -1,5 +1,9 @@
+import logging
+
 from .step import Step
 from yt_concate.model.found import Found
+
+logger = logging.getLogger(__name__)
 
 
 class Search(Step):
@@ -17,5 +21,5 @@ class Search(Step):
                     time = captions[caption]
                     f = Found(yt, caption, time)
                     found.append(f)
-        print('found objects:', len(found))
+        logger.info('found objects:', len(found))
         return found

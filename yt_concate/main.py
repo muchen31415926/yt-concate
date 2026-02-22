@@ -1,3 +1,7 @@
+import argparse
+
+import yt_concate.logging_config
+
 from yt_concate.pipeline.steps.preflight import Preflight
 from yt_concate.pipeline.steps.get_video_list import GetVideoList
 from yt_concate.pipeline.steps.initialize_yt import InitializeYT
@@ -11,15 +15,42 @@ from yt_concate.pipeline.steps.step import StepException
 from yt_concate.pipeline.pipeline import PipeLine
 from yt_concate.utils import Utils
 
-CHANNEL_ID = 'UCRa323qW1-btI2PCU_U7upQ'
 
 def main():
+    parser = argparse.ArgumentParser(description="Concatenate clips with the same keyword")
+
+    parser.add_argument("-c", "--channel", type=str, help="Channel ID", required=True)
+    parser.add_argument("-s", "--search", type=str, help="Search keyword", required=True)
+    parser.add_argument("-d", "--download", type=int, help="Download limit", default=80)
+    parser.add_argument("--concat", type=int, help="Concat limit", default=40)
+    parser.add_argument(
+        "--console-level",
+        type=str.upper,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Logging level for console handler"
+    )
+
+    parser.add_argument(
+        "--file-level",
+        type=str.upper,
+        default="WARNING",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Logging level for file handler"
+    )
+
+    args = parser.parse_args()
+
     inputs = {
-        'channel_id': CHANNEL_ID,
-        'search_word': 'Prime',
-        'download_video_limit': 80,
-        'concat_videos_limit': 40,
+        'channel_id': args.channel,
+        'search_word': args.search,
+        'download_videos_limit': args.download,
+        'concat_videos_limit': args.concat,
+        'console_level': args.console_level,
+        'file_level': args.file_level,
     }
+
+    yt_concate.logging_config.setup_logging(inputs)
 
     steps = [
         Preflight(),
