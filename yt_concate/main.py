@@ -17,7 +17,7 @@ from yt_concate.utils import Utils
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Concatenate clips with the same keyword")
+    parser = argparse.ArgumentParser(description="Produce a concatenated video of clips that mention a word from a channel ID.")
 
     parser.add_argument("-c", "--channel", type=str, help="Channel ID", required=True)
     parser.add_argument("-s", "--search", type=str, help="Search keyword", required=True)
